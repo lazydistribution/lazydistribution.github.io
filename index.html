@@ -39,7 +39,13 @@ window.onload = function () {
 		heiluvaFilmi,
 		kurvit = 5,
 		headlineSize = 50,
+		headlineText = 'Hello!',
 		signatureSize = 14,
+		signatureTexts = [
+			{'text': '#1.0', 'marginTop': 73},
+			{'text': 'lazy (dot) distribution (at) gmail (dot) com', 'marginTop': signatureSize+2.5},
+			{'text': 'Lazy Distribution ' + new Date().getFullYear(), 'marginTop': signatureSize+2.5}
+		],
 		fontFamilyHeadline = "Ceviche One";//"Lobster",
 		fontFamilySignature = "Lobster",
 		offsetX = 0,
@@ -299,7 +305,7 @@ window.onload = function () {
 		// kirjotetaan tervetuliaisteksti
 		//context.font = "bold 32px Arial";
 		context.font = "bold "+headlineSize+"px "+ fontFamilyHeadline;
-		var txt = "Hello!";
+		var txt = headlineText;
 		var x = (canvas.width - context.measureText(txt).width) / 2 + offsetX;
 		context.fillStyle = "#000000";
 		var y = (canvas.height - 88) * 0.5 + offsetY;
@@ -307,8 +313,17 @@ window.onload = function () {
 		context.fillText(txt, x, y);
 		
 		//kirjoitetaan yhteystiedot ja p�ivitysvuosi
-		
-		context.font = signatureSize + "px " + fontFamilySignature;
+		for(var s = 0; s < signatureTexts.length; s++) {
+			context.font = signatureSize + "px " + fontFamilySignature;
+			txt = signatureTexts[s].text;
+			x = (canvas.width - context.measureText(txt).width) / 2 + offsetX;
+			context.fillStyle = "#000000";
+			y += signatureTexts[s].marginTop;
+			context.fillText(txt, x, y);
+			
+		}
+		/*
+ 		context.font = signatureSize + "px " + fontFamilySignature;
 		txt = "#1.0";
 		x = (canvas.width - context.measureText(txt).width) / 2 + offsetX;
 		context.fillStyle = "#000000";
@@ -332,6 +347,7 @@ window.onload = function () {
 		y += signatureSize;
 		context.fillText(txt, x, y);
 		//context.fillText(txt, x, 187);
+		//*/
 	};
 	Element.prototype.remove = function() {
 		this.parentElement.removeChild(this);
