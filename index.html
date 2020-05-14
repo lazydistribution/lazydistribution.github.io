@@ -1,340 +1,422 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
-<head>
-<meta charset="utf-8">
-<title></title>
-<link rel="stylesheet" href="css/style.css">
-<link href='https://fonts.googleapis.com/css?family=Lobster' rel='stylesheet' type='text/css'>
-<link href='https://fonts.googleapis.com/css?family=Ceviche+One' rel='stylesheet' type='text/css'>
-</head>
-<body>
-<canvas id="canvas" width="1000" height="600"></canvas>
-<div id="fontloader" style="font-family: Lobster;">.<div style="font-family: Ceviche One;">.</div></div>
-<!--http://jscompress.com/
+  <head>
+    <meta charset="utf-8" />
+    <title></title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link
+      href="https://fonts.googleapis.com/css?family=Lobster"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css?family=Ceviche+One"
+      rel="stylesheet"
+      type="text/css"
+    />
+  </head>
+  <body>
+    <canvas id="canvas" width="1000" height="600"></canvas>
+    <div id="fontloader" style="font-family: Lobster;">
+      .
+      <div style="font-family: Ceviche One;">.</div>
+    </div>
+    <!--http://jscompress.com/
 	http://jsbeautifier.org/-->
-<!--<script src="utils2.js"></script>
+    <!--<script src="utils2.js"></script>
 <script src="program.js"></script>-->
 
-<script src="js/index/utils.js"></script>
-<script src="js/index/ball.js"></script>
-<script src="js/index/curve2.js"></script>
-<script src="js/index/rect.js"></script>
-<script src="js/index/quad.js"></script>
-<script src="js/index/border.js"></script>
-<script src="js/index/radialborder.js"></script>
-<script src="js/index/filmikehys.js"></script>
-<script src="js/index/point.js"></script>
-<script src="js/index/thinline.js"></script>
-<script>
-window.onload = function () {
-	var canvas = document.getElementById("canvas"),
-		context = canvas.getContext("2d"),
-		curves = [],
-		marginaaliW = 3,
-		marginaaliH = 3,
-		greenChannelOptions = [],
-		rectangles = [],
-		borders = [],
-		radialBorder,
-		heiluvaFilmi,
-		kurvit = 5,
-		headlineSize = 50,
-		headlineText = 'Hello!',
-		signatureSize = 14,
-		signatureTexts = [
-			{'text': '#1.0', 'marginTop': 73},
-			{'text': 'lazy (dot) distribution (at) gmail (dot) com', 'marginTop': signatureSize+2.5},
-			{'text': 'Lazy Distribution ' + new Date().getFullYear(), 'marginTop': signatureSize+2.5}
-		],
-		fontFamilyHeadline = "Ceviche One";//"Lobster",
-		fontFamilySignature = "Lobster",
-		offsetX = 0,
-		offsetY = 0,
-		points = [],
-		lines = [],
-		numPoints = 100,
-		maxOffset = 2;
-		
-	function init(){
-		document.getElementById("fontloader").remove();
-		// skaalataan n�ytt�
-		context.canvas.width  = window.innerWidth - marginaaliW;
-		context.canvas.height = window.innerHeight - marginaaliH;
-		
-		for(var i=0; i < numPoints; i++){
-			points.push(new Point(Math.random() * canvas.width, Math.random() * canvas.height));
-			points[i].vel = Math.random() * 10+5;
-			points[i].dir = Math.random() * Math.PI;
-			points[i].vx = points[i].vel * Math.cos(points[i].dir);
-			points[i].vy = points[i].vel * Math.sin(points[i].dir);
-		}
-		
-		// m��ritell��n raitojen arvot
-		var rect;
-		var opacity = 0.01;
-		var rects = 10;
-		var widthSpaces = [100,200,300,400];
-		var widthSpaceCounter = -1;
-		var durationSpaces = [100,200,300];
-		var durationSpaceCounter = 0;
-		var width;
-		// luodaan raidat
-		for(var i = 0; i < rects; i++){
-			widthSpaceCounter += i % 3 == 0 ? 1:0; 
-			widthSpace = widthSpaces[widthSpaceCounter];
-			width = (widthSpace - 2) * Math.random() + 2;
-			rect = new Rect(Math.random() * (canvas.width - width), 0, width, canvas.height);
-			rect.areaWidth = canvas.width - width;
-			rect.maxWidthX = widthSpace;
-			rect.minWidthX = (width - 2) * Math.random() + 2;
-			rect.dir = Math.random() > 0.5 ? 1 : -1;
-			rect.scaleStepX = Math.round(2 * Math.random()) + 0.1;
-			durationSpace = durationSpaces[durationSpaceCounter];
-			if(++durationSpaceCounter == durationSpaces.length) {
-				durationSpaceCounter = 0;
-			};
-			rect.durationSpace = durationSpace;
-			rect.name = "rect"+i;
-			rect.tweenSetup();
-			if(i < 3) rect.color = "white";
-			rect.opacity = opacity;
-			rectangles.push(rect);
-		};
-		
-		// m��ritell��n kehykset�
-		var borderProps = [{direction:"right",x:0,y:0,width:50,height:canvas.height},
-						   {direction:"left",x:canvas.width-50,y:0,width:50,height:canvas.height},
-						   {direction:"top",x:0,y:canvas.height-50,width:canvas.width,height:50},
-						   {direction:"down",x:0,y:0,width:canvas.width,height:50}];
-		var border;
-		//luodaan kehykset
-		for(var i=0; i < borderProps.length; i++){
-			var border = new Border(borderProps[i].x,borderProps[i].y,borderProps[i].width,borderProps[i].height);
-			border.distance = 50;
-			border.direction = borderProps[i].direction;
-			borders.push(border);
-		};
-		
-		heiluvaFilmi = new Filmikehys(0, 0, canvas.width, canvas.height);
-		
-		//luodaan ympyr�kehys
-		radialBorder = new RadialBorder(0,0,canvas.width,canvas.height);
-		radialBorder.innerRadius = canvas.height * 0.5;
-		radialBorder.innerDurationSpace = 100;
-		radialBorder.innerMax = canvas.height * 0.6;
-		radialBorder.innerRadiusSpace = radialBorder.innerMax - canvas.height * 0.1;
-		radialBorder.innerTweenSetup();
-		
-		radialBorder.outerRadius = canvas.height * 0.9;
-		radialBorder.outerDurationSpace = 100;
-		radialBorder.outerMin = canvas.height * 0.8;
-		radialBorder.outerRadiusSpace = canvas.height * 2 - radialBorder.outerMin;
-		radialBorder.outerTweenSetup();
-		
-		// luodaan kurveille v�rit
-		var colors = [];
-		for(var i = 0; i < kurvit; i++){
-			colors.push(utils.getRandomColor());
-		};
-		// luodaan kurvit
-		var curve;
-		for(var i=0; i < colors.length; i++){
-			curve = new Curve();
-			curve.name = "curve" + i;
-			curve.lineLength = 50;
-			curve.lineWidth = 5;
-			curve.linesCountTotal = kurvit;
-			curve.color = colors[i];
-			curve.step = Math.round(100*((Math.random() * 3 + 3)/300)) / 100;// ;0.02;// * Math.random() + 0.02;
-			curve.reset();
-			curves.push(curve);
-		};
-		
-		var timer = setInterval(function () {positions()}, 1000/60);
-	};
-	
-	function positions(){
-		// skaalataan n�ytt�
-		context.canvas.width  = window.innerWidth - marginaaliW;
-		context.canvas.height = window.innerHeight - marginaaliH;
-		
-		offsetX = Math.random() * 2;
-		offsetY = Math.random() * 2;
-		
-		// luodaan kurveille piirrett�v�t pisteet
-		var p;
-		for(var i=0; i < curves.length; i++){
-			p = utils.bezier(curves[i].currentStep, curves[i].dots[0], curves[i].dots[1], curves[i].dots[2], curves[i].dots[3]);
-			curves[i].currentStep += curves[i].step;
-			curves[i].offsetX = offsetX;
-			curves[i].offsetY = offsetY;
-			if(curves[i].currentStep >= 1){
-				curves[i].currentStep = 0;
-				curves[i].reset();
-			};
-			curves[i].line.push(p);
-			if(curves[i].line.length > curves[i].lineLength){
-				curves[i].line.shift();
-			};
-		};
-		for(var i=0; i<rectangles.length; i++){
-			if(rectangles[i].isTweening){
-				rectangles[i].height = canvas.height;
-				rectangles[i].areaWidth = canvas.width - rectangles[i].width;
-				rectangles[i].update();
-				rectangles[i].tween();
-			};
-		};
-		for(var i=0; i < borders.length; i++){
-			borders[i].updateDimensions(canvas);
-		}
-		radialBorder.outerMin = canvas.height * 0.8;
-		radialBorder.innerMax = canvas.height * 0.75;
-		radialBorder.outerRadiusSpace = canvas.height * 2 - radialBorder.outerMin;
-		radialBorder.innerRadiusSpace = radialBorder.innerMax - canvas.height * 0.1;
-		radialBorder.updateDimensions(canvas);
-		if(radialBorder.isInnerTweening){
-			radialBorder.innerTween();
-		}
-		if(radialBorder.isOuterTweening){
-			radialBorder.outerTween();
-		}
-		
-		heiluvaFilmi.update(canvas.width, canvas.height, offsetX, offsetY);
-		
-		lines = [];
-		for(var i=0; i < points.length; i++){
-			if(points[i].x + points[i].vx < 0){
-				points[i].x = 0;
-				points[i].vx = -points[i].vx;
-			} else if(points[i].x + points[i].vx > canvas.width){
-				points[i].x = canvas.width;
-				points[i].vx = -points[i].vx;
-			}
-			if(points[i].y + points[i].vy < 0){
-				points[i].y = 0;
-				points[i].vy = -points[i].vy;
-			} else if(points[i].y + points[i].vy > canvas.height){
-				points[i].y = canvas.height;
-				points[i].vy = -points[i].vy;
-			}
-			points[i].x += points[i].vx + offsetX;
-			points[i].y += points[i].vy + offsetY;
-			for(var j=points.length-1; j >= 0; j--){
-				if(points[i] != points[j]){
-					var dx = points[i].x - points[j].x;
-					var dy = points[i].y - points[j].y;
-					var dis = dx*dx+dy*dy;
-					if(dis < 10000){
-						lines.push(new ThinLine({x:points[i].x, y:points[i].y}, {x:points[j].x, y:points[j].y}, utils.getRandomColor(), 0.25));
-					}
-				}
-			}
-		}
-		
-		draw();
-	};
-	
-	function draw(){
-		// tyhjennet��n kuvaruutu
-		context.clearRect(0, 0, canvas.width, canvas.height);
-		
-		//piirret��n raidat
-		for(var i=0; i<rectangles.length; i++){
-			rectangles[i].draw(context);
-		}
-		
-		// piirret��n palloja
-		//drawNoise();
-		for(var i=0; i < lines.length; i++){
-			lines[i].draw(context);
-		}
-		
-		
-		// piirret��n grafiikka
-		for(i=0; i < curves.length; i++){
-			curves[i].draw(context);
-		};
-		
-		// piirret��n karvoja ja lopuksi tekstit
-		drawHair();
-		
-		for(var i=0; i < borders.length; i++){
-			borders[i].draw(context);
-		}
-		heiluvaFilmi.draw(context)
-		radialBorder.draw(context);
-		drawTekstit();
-	};
-	function drawNoise(){
-		var ball;
-		var color;
-		var size;
-		for(i=0; i < 250; i++){
-			color = "rgba(0,0,0,0.2)";
-			//if (i>400) color = "#cccccc";
-			size = 1;// * Math.random();
-			ball = new Ball(size, color);
-			ball.x = canvas.width * Math.random();
-			ball.y = canvas.height * Math.random();
-			ball.draw(context);
-		};
-	};
-	function drawHair(){
-		// arvotaan karvan paikka
-		var a = {x:canvas.width * Math.random(), y:canvas.height * Math.random()};
-		var b = {x:canvas.width * Math.random(), y:canvas.height * Math.random()};
-		var c = {x:canvas.width * Math.random(), y:canvas.height * Math.random()};
-		var d = {x:canvas.width * Math.random(), y:canvas.height * Math.random()};
-		
-		// resoluutio
-		var step = 0.02;
-		
-		// piirret��n karva
-		context.beginPath();
-		context.moveTo(a.x, a.y);
-		for(var i=0; i<=1; i+=step){
-			var p = utils.bezier(i, a, b, c, d);
-			context.lineTo(p.x,p.y);
-		};
-		context.strokeStyle = "rgba(0,0,0,0.1)";
-		context.lineWidth = 1;
-		context.stroke();
-	};
-	function drawTekstit(){
-		// kirjotetaan tervetuliaisteksti
-		//context.font = "bold 32px Arial";
-		context.font = "bold "+headlineSize+"px "+ fontFamilyHeadline;
-		var txt = headlineText;
-		var x = (canvas.width - context.measureText(txt).width) / 2 + offsetX;
-		context.fillStyle = "#000000";
-		var y = (canvas.height - 88) * 0.5 + offsetY;
-		//var y = 103;
-		context.fillText(txt, x, y);
-		
-		//kirjoitetaan yhteystiedot ja p�ivitysvuosi
-		for(var s = 0; s < signatureTexts.length; s++) {
-			context.font = signatureSize + "px " + fontFamilySignature;
-			txt = signatureTexts[s].text;
-			x = (canvas.width - context.measureText(txt).width) / 2 + offsetX;
-			context.fillStyle = "#000000";
-			y += signatureTexts[s].marginTop;
-			context.fillText(txt, x, y);
-			
-		}
-	};
-	Element.prototype.remove = function() {
-		this.parentElement.removeChild(this);
-	}
-	NodeList.prototype.remove = HTMLCollection.prototype.remove = function() {
-		for(var i = this.length - 1; i >= 0; i--) {
-			if(this[i] && this[i].parentElement) {
-				this[i].parentElement.removeChild(this[i]);
-			}
-		}
-	}
-	init();
-};
-</script>
-</body>
+    <script src="js/index/utils.js"></script>
+    <script src="js/index/ball.js"></script>
+    <script src="js/index/curve2.js"></script>
+    <script src="js/index/rect.js"></script>
+    <script src="js/index/quad.js"></script>
+    <script src="js/index/border.js"></script>
+    <script src="js/index/radialborder.js"></script>
+    <script src="js/index/filmikehys.js"></script>
+    <script src="js/index/point.js"></script>
+    <script src="js/index/thinline.js"></script>
+    <script>
+      window.onload = function() {
+        var canvas = document.getElementById("canvas"),
+          context = canvas.getContext("2d"),
+          curves = [],
+          marginaaliW = 3,
+          marginaaliH = 3,
+          greenChannelOptions = [],
+          rectangles = [],
+          borders = [],
+          radialBorder,
+          heiluvaFilmi,
+          kurvit = 5,
+          headlineSize = 50,
+          headlineText = "Hello!",
+          signatureSize = 14,
+          signatureTexts = [
+            { text: "#1.0", marginTop: 73 },
+            {
+              text: "lazy (dot) distribution (at) gmail (dot) com",
+              marginTop: signatureSize + 2.5
+            },
+            {
+              text: "Lazy Distribution " + new Date().getFullYear(),
+              marginTop: signatureSize + 2.5
+            }
+          ],
+          fontFamilyHeadline = "Ceviche One"; //"Lobster",
+        (fontFamilySignature = "Lobster"),
+          (offsetX = 0),
+          (offsetY = 0),
+          (points = []),
+          (lines = []),
+          (numPoints = 100),
+          (maxOffset = 2);
+
+        function init() {
+          document.getElementById("fontloader").remove();
+          // skaalataan n�ytt�
+          context.canvas.width = window.innerWidth - marginaaliW;
+          context.canvas.height = window.innerHeight - marginaaliH;
+
+          for (var i = 0; i < numPoints; i++) {
+            points.push(
+              new Point(
+                Math.random() * canvas.width,
+                Math.random() * canvas.height
+              )
+            );
+            points[i].vel = Math.random() * 10 + 5;
+            points[i].dir = Math.random() * Math.PI;
+            points[i].vx = points[i].vel * Math.cos(points[i].dir);
+            points[i].vy = points[i].vel * Math.sin(points[i].dir);
+          }
+
+          // m��ritell��n raitojen arvot
+          var rect;
+          var opacity = 0.01;
+          var rects = 10;
+          var widthSpaces = [100, 200, 300, 400];
+          var widthSpaceCounter = -1;
+          var durationSpaces = [100, 200, 300];
+          var durationSpaceCounter = 0;
+          var width;
+          // luodaan raidat
+          for (var i = 0; i < rects; i++) {
+            widthSpaceCounter += i % 3 == 0 ? 1 : 0;
+            widthSpace = widthSpaces[widthSpaceCounter];
+            width = (widthSpace - 2) * Math.random() + 2;
+            rect = new Rect(
+              Math.random() * (canvas.width - width),
+              0,
+              width,
+              canvas.height
+            );
+            rect.areaWidth = canvas.width - width;
+            rect.maxWidthX = widthSpace;
+            rect.minWidthX = (width - 2) * Math.random() + 2;
+            rect.dir = Math.random() > 0.5 ? 1 : -1;
+            rect.scaleStepX = Math.round(2 * Math.random()) + 0.1;
+            durationSpace = durationSpaces[durationSpaceCounter];
+            if (++durationSpaceCounter == durationSpaces.length) {
+              durationSpaceCounter = 0;
+            }
+            rect.durationSpace = durationSpace;
+            rect.name = "rect" + i;
+            rect.tweenSetup();
+            if (i < 3) rect.color = "white";
+            rect.opacity = opacity;
+            rectangles.push(rect);
+          }
+
+          // m��ritell��n kehykset�
+          var borderProps = [
+            {
+              direction: "right",
+              x: 0,
+              y: 0,
+              width: 50,
+              height: canvas.height
+            },
+            {
+              direction: "left",
+              x: canvas.width - 50,
+              y: 0,
+              width: 50,
+              height: canvas.height
+            },
+            {
+              direction: "top",
+              x: 0,
+              y: canvas.height - 50,
+              width: canvas.width,
+              height: 50
+            },
+            { direction: "down", x: 0, y: 0, width: canvas.width, height: 50 }
+          ];
+          var border;
+          //luodaan kehykset
+          for (var i = 0; i < borderProps.length; i++) {
+            var border = new Border(
+              borderProps[i].x,
+              borderProps[i].y,
+              borderProps[i].width,
+              borderProps[i].height
+            );
+            border.distance = 50;
+            border.direction = borderProps[i].direction;
+            borders.push(border);
+          }
+
+          heiluvaFilmi = new Filmikehys(0, 0, canvas.width, canvas.height);
+
+          //luodaan ympyr�kehys
+          radialBorder = new RadialBorder(0, 0, canvas.width, canvas.height);
+          radialBorder.innerRadius = canvas.height * 0.5;
+          radialBorder.innerDurationSpace = 100;
+          radialBorder.innerMax = canvas.height * 0.6;
+          radialBorder.innerRadiusSpace =
+            radialBorder.innerMax - canvas.height * 0.1;
+          radialBorder.innerTweenSetup();
+
+          radialBorder.outerRadius = canvas.height * 0.9;
+          radialBorder.outerDurationSpace = 100;
+          radialBorder.outerMin = canvas.height * 0.8;
+          radialBorder.outerRadiusSpace =
+            canvas.height * 2 - radialBorder.outerMin;
+          radialBorder.outerTweenSetup();
+
+          // luodaan kurveille v�rit
+          var colors = [];
+          for (var i = 0; i < kurvit; i++) {
+            colors.push(utils.getRandomColor());
+          }
+          // luodaan kurvit
+          var curve;
+          for (var i = 0; i < colors.length; i++) {
+            curve = new Curve();
+            curve.name = "curve" + i;
+            curve.lineLength = 50;
+            curve.lineWidth = 5;
+            curve.linesCountTotal = kurvit;
+            curve.color = colors[i];
+            curve.step =
+              Math.round(100 * ((Math.random() * 3 + 3) / 300)) / 100; // ;0.02;// * Math.random() + 0.02;
+            curve.reset();
+            curves.push(curve);
+          }
+
+          var timer = setInterval(function() {
+            positions();
+          }, 1000 / 60);
+        }
+
+        function positions() {
+          // skaalataan n�ytt�
+          context.canvas.width = window.innerWidth - marginaaliW;
+          context.canvas.height = window.innerHeight - marginaaliH;
+
+          offsetX = Math.random() * 2;
+          offsetY = Math.random() * 2;
+
+          // luodaan kurveille piirrett�v�t pisteet
+          var p;
+          for (var i = 0; i < curves.length; i++) {
+            p = utils.bezier(
+              curves[i].currentStep,
+              curves[i].dots[0],
+              curves[i].dots[1],
+              curves[i].dots[2],
+              curves[i].dots[3]
+            );
+            curves[i].currentStep += curves[i].step;
+            curves[i].offsetX = offsetX;
+            curves[i].offsetY = offsetY;
+            if (curves[i].currentStep >= 1) {
+              curves[i].currentStep = 0;
+              curves[i].reset();
+            }
+            curves[i].line.push(p);
+            if (curves[i].line.length > curves[i].lineLength) {
+              curves[i].line.shift();
+            }
+          }
+          for (var i = 0; i < rectangles.length; i++) {
+            if (rectangles[i].isTweening) {
+              rectangles[i].height = canvas.height;
+              rectangles[i].areaWidth = canvas.width - rectangles[i].width;
+              rectangles[i].update();
+              rectangles[i].tween();
+            }
+          }
+          for (var i = 0; i < borders.length; i++) {
+            borders[i].updateDimensions(canvas);
+          }
+          radialBorder.outerMin = canvas.height * 0.8;
+          radialBorder.innerMax = canvas.height * 0.75;
+          radialBorder.outerRadiusSpace =
+            canvas.height * 2 - radialBorder.outerMin;
+          radialBorder.innerRadiusSpace =
+            radialBorder.innerMax - canvas.height * 0.1;
+          radialBorder.updateDimensions(canvas);
+          if (radialBorder.isInnerTweening) {
+            radialBorder.innerTween();
+          }
+          if (radialBorder.isOuterTweening) {
+            radialBorder.outerTween();
+          }
+
+          heiluvaFilmi.update(canvas.width, canvas.height, offsetX, offsetY);
+
+          lines = [];
+          for (var i = 0; i < points.length; i++) {
+            if (points[i].x + points[i].vx < 0) {
+              points[i].x = 0;
+              points[i].vx = -points[i].vx;
+            } else if (points[i].x + points[i].vx > canvas.width) {
+              points[i].x = canvas.width;
+              points[i].vx = -points[i].vx;
+            }
+            if (points[i].y + points[i].vy < 0) {
+              points[i].y = 0;
+              points[i].vy = -points[i].vy;
+            } else if (points[i].y + points[i].vy > canvas.height) {
+              points[i].y = canvas.height;
+              points[i].vy = -points[i].vy;
+            }
+            points[i].x += points[i].vx + offsetX;
+            points[i].y += points[i].vy + offsetY;
+            for (var j = points.length - 1; j >= 0; j--) {
+              if (points[i] != points[j]) {
+                var dx = points[i].x - points[j].x;
+                var dy = points[i].y - points[j].y;
+                var dis = dx * dx + dy * dy;
+                if (dis < 10000) {
+                  lines.push(
+                    new ThinLine(
+                      { x: points[i].x, y: points[i].y },
+                      { x: points[j].x, y: points[j].y },
+                      utils.getRandomColor(),
+                      0.25
+                    )
+                  );
+                }
+              }
+            }
+          }
+
+          draw();
+        }
+
+        function draw() {
+          // tyhjennet��n kuvaruutu
+          context.clearRect(0, 0, canvas.width, canvas.height);
+
+          //piirret��n raidat
+          for (var i = 0; i < rectangles.length; i++) {
+            rectangles[i].draw(context);
+          }
+
+          // piirret��n palloja
+          //drawNoise();
+          for (var i = 0; i < lines.length; i++) {
+            lines[i].draw(context);
+          }
+
+          // piirret��n grafiikka
+          for (i = 0; i < curves.length; i++) {
+            curves[i].draw(context);
+          }
+
+          // piirret��n karvoja ja lopuksi tekstit
+          drawHair();
+
+          for (var i = 0; i < borders.length; i++) {
+            borders[i].draw(context);
+          }
+          heiluvaFilmi.draw(context);
+          radialBorder.draw(context);
+          drawTekstit();
+        }
+        function drawNoise() {
+          var ball;
+          var color;
+          var size;
+          for (i = 0; i < 250; i++) {
+            color = "rgba(0,0,0,0.2)";
+            //if (i>400) color = "#cccccc";
+            size = 1; // * Math.random();
+            ball = new Ball(size, color);
+            ball.x = canvas.width * Math.random();
+            ball.y = canvas.height * Math.random();
+            ball.draw(context);
+          }
+        }
+        function drawHair() {
+          // arvotaan karvan paikka
+          var a = {
+            x: canvas.width * Math.random(),
+            y: canvas.height * Math.random()
+          };
+          var b = {
+            x: canvas.width * Math.random(),
+            y: canvas.height * Math.random()
+          };
+          var c = {
+            x: canvas.width * Math.random(),
+            y: canvas.height * Math.random()
+          };
+          var d = {
+            x: canvas.width * Math.random(),
+            y: canvas.height * Math.random()
+          };
+
+          // resoluutio
+          var step = 0.02;
+
+          // piirret��n karva
+          context.beginPath();
+          context.moveTo(a.x, a.y);
+          for (var i = 0; i <= 1; i += step) {
+            var p = utils.bezier(i, a, b, c, d);
+            context.lineTo(p.x, p.y);
+          }
+          context.strokeStyle = "rgba(0,0,0,0.1)";
+          context.lineWidth = 1;
+          context.stroke();
+        }
+        function drawTekstit() {
+          // kirjotetaan tervetuliaisteksti
+          //context.font = "bold 32px Arial";
+          context.font = "bold " + headlineSize + "px " + fontFamilyHeadline;
+          var txt = headlineText;
+          var x = (canvas.width - context.measureText(txt).width) / 2 + offsetX;
+          context.fillStyle = "#000000";
+          var y = (canvas.height - 88) * 0.5 + offsetY;
+          //var y = 103;
+          context.fillText(txt, x, y);
+
+          //kirjoitetaan yhteystiedot ja p�ivitysvuosi
+          for (var s = 0; s < signatureTexts.length; s++) {
+            context.font = signatureSize + "px " + fontFamilySignature;
+            txt = signatureTexts[s].text;
+            x = (canvas.width - context.measureText(txt).width) / 2 + offsetX;
+            context.fillStyle = "#000000";
+            y += signatureTexts[s].marginTop;
+            context.fillText(txt, x, y);
+          }
+        }
+        Element.prototype.remove = function() {
+          this.parentElement.removeChild(this);
+        };
+        NodeList.prototype.remove = HTMLCollection.prototype.remove = function() {
+          for (var i = this.length - 1; i >= 0; i--) {
+            if (this[i] && this[i].parentElement) {
+              this[i].parentElement.removeChild(this[i]);
+            }
+          }
+        };
+        init();
+      };
+    </script>
+  </body>
 </html>
