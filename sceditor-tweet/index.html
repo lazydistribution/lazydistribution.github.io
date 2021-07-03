@@ -20,7 +20,7 @@
 	<script src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 	<!-- Twitter related assets | end-->
 	
-	<!-- SCEditor related assets | start-->
+	<!-- SCEditor related css | start-->
 	<style>
 	html {
 		font-family: Arial, Helvetica, sans-serif;
@@ -59,7 +59,7 @@
 		background-size: 16px 16px;
 	}
 	</style>
-	<!-- SCEditor related assets | end-->
+	<!-- SCEditor related css | end-->
 </head>
 <body>
 <form action="" method="post">
@@ -84,7 +84,7 @@ function createTwitterButton() {
 		exec: function() {
 			const self = this;
 			
-			// after cliced twitter option button we create dropdown for inserting url
+			// after clicked twitter option button we create dropdown for inserting url
 			const dropdownString = '<div class="sceditor-dropdown sceditor-insertlink" style="top: 5px; left: 6px; margin-top: 26px;"><div><div><label for="link">Twitter URL: </label><input type="text" id="link" dir="ltr" placeholder="https://"></div><div><input type="button" class="button" value="Lisää"></div></div></div>';
 			const dropdown = createElementFromHTML(dropdownString);
 			document.querySelector(".sceditor-toolbar").appendChild(dropdown);
@@ -103,20 +103,21 @@ function createTwitterButton() {
 					const tweetRegex = /^https?:\/\/twitter\.com\/(?:#!\/)?(\w+)\/status(es)?\/([0-9]{19})/
 					const id = twitterShareTweetLink.match(tweetRegex)[3];
 					
-					// next we construct a container for the tweet. In this we load tweet, render it and move in SCEditor
+					// next we construct a container for the tweet. with this container we load tweet, render it and move it in the SCEditor
 					const container = createElementFromHTML('<div class="tweet" id="' + id + '"></div>');
 					document.querySelector('body').appendChild(container);
 					
-					// get our container
+					// now when our container can be found from body get reference to it
 					const tweet = document.querySelector('.tweet');
 					
-					// yhis should expand text area content size accordingly. Not sure where this should be
+					// this should expand text area content-size accordingly. Not sure where should I put this
 					self.expandToContent();
 					
-					// listener for detectin when tweet is rendered in body element
+					// listener for detecting when tweet is rendered in body element
 					twttr.events.bind('rendered', function (event) {
 						
-						// when tweet is fully rendered we move it to SCEditor and remove class name prevet conflicts with other tweets
+						// when tweet is fully rendered in the body element we move it to the SCEditor 
+						// and remove class name to prevent conflicts with other tweets
 						self.getBody().firstChild.appendChild(tweet);
 						if(self.getBody().querySelector('.tweet').classList) {
 							self.getBody().querySelector('.tweet').classList.remove('tweet');
@@ -125,10 +126,10 @@ function createTwitterButton() {
 					
 					// tweet widget creator function
 					twttr.widgets.createTweet(id, tweet, {
-						conversation: 'all', // or all
-						cards: 'visible', // or visible 
+						conversation: 'all',  // or all
+						cards: 'visible',     // or visible 
 						linkColor: '#cc0000', // default is blue
-						theme: 'light' // or dark
+						theme: 'light'        // or dark
 					});
 				}
 			});
@@ -148,7 +149,7 @@ function createTwitterButton() {
 }
 
 function createEditor() {
-	let textarea = document.getElementById('example');
+	const textarea = document.getElementById('example');
 
 	sceditor.create(textarea, {
 		format: 'bbcode',
