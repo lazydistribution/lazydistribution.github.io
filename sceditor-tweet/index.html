@@ -86,25 +86,24 @@ function createTwitterButton() {
 			
 			// after clicked twitter option button we create dropdown for inserting url
 			const dropdownString = '<div class="sceditor-dropdown sceditor-insertlink" style="top: 5px; left: 6px; margin-top: 26px;"><div><div><label for="link">Twitter URL: </label><input type="text" id="link" dir="ltr" placeholder="https://"></div><div><input type="button" class="button" value="Lisää"></div></div></div>';
-			const dropdown = createElementFromHTML(dropdownString);
+			const dropdown = htmlElementFromString(dropdownString);
 			document.querySelector(".sceditor-toolbar").appendChild(dropdown);
 			document.querySelector('input[value=Lisää]').addEventListener('click', function(e){
 				e.preventDefault();
 				
 				// after submitting url we test if url is valid
-				const url = document.querySelector('input[id=link]').value;
-				if(validateTwitterURL(url)) {
+				const twitterShareTweetLink = document.querySelector('input[id=link]').value;
+				if(validateTwitterURL(twitterShareTweetLink)) {
 					
 					// if url is valid we close dropdown
 					document.querySelector('.sceditor-dropdown').remove();
 					
 					// next we collect tweet id
-					const twitterShareTweetLink = url;
 					const tweetRegex = /^https?:\/\/twitter\.com\/(?:#!\/)?(\w+)\/status(es)?\/([0-9]{19})/
 					const id = twitterShareTweetLink.match(tweetRegex)[3];
 					
 					// next we construct a container for the tweet. with this container we load tweet, render it and move it in the SCEditor
-					const container = createElementFromHTML('<div class="tweet" id="' + id + '"></div>');
+					const container = htmlElementFromString('<div class="tweet" id="' + id + '"></div>');
 					document.querySelector('body').appendChild(container);
 					
 					// now when our container can be found from the body element we get reference to it
@@ -137,7 +136,7 @@ function createTwitterButton() {
 		}
 	});
 	
-	function createElementFromHTML(htmlString) {
+	function htmlElementFromString(htmlString) {
 		const div = document.createElement('div');
 		div.innerHTML = htmlString.trim();
 		return div.firstChild; 
