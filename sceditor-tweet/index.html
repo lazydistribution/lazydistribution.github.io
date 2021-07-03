@@ -7,13 +7,20 @@
 	<title>SCEditor Demo</title>
 	
 	<link rel="icon" type="image/ico" data-hid="favicon" href="https://lazydistribution.github.io/sceditor-tweet/icons/favicon.ico" />
+	
+	<!-- SCEditor related assets | start-->
 	<link rel="stylesheet" href="https://lazydistribution.github.io/sceditor-tweet/minified/themes/default.min.css" id="theme-style" />
 	
 	<script src="https://lazydistribution.github.io/sceditor-tweet/minified/sceditor.min.js"></script>
 	<script src="https://lazydistribution.github.io/sceditor-tweet/minified/icons/monocons.js?"></script>
 	<script src="https://lazydistribution.github.io/sceditor-tweet/minified/formats/bbcode.js"></script>
-	<script src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+	<!-- SCEditor related assets | end-->
 	
+	<!-- Twitter related assets | start-->
+	<script src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+	<!-- Twitter related assets | end-->
+	
+	<!-- SCEditor related assets | start-->
 	<style>
 	html {
 		font-family: Arial, Helvetica, sans-serif;
@@ -52,6 +59,7 @@
 		background-size: 16px 16px;
 	}
 	</style>
+	<!-- SCEditor related assets | end-->
 </head>
 <body>
 <form action="" method="post">
@@ -68,32 +76,54 @@ function init() {
 }
 
 function createTwitterButton() {
+	/**
+	 * creates a button in SCEditor
+	 * needs css styles for ui: .sceditor-button-[option-name] div { 
+	 */
 	sceditor.command.set('twitter', {
 		exec: function() {
 			const self = this;
-			const xmlString = '<div class="sceditor-dropdown sceditor-insertlink" style="top: 5px; left: 6px; margin-top: 26px;"><div><div><label for="link">Twitter URL: </label><input type="text" id="link" dir="ltr" placeholder="https://"></div><div><input type="button" class="button" value="Lisää"></div></div></div>';
-			const node = createElementFromHTML(xmlString);
-			document.querySelector(".sceditor-toolbar").appendChild(node);
+			
+			// after cliced twitter option button we create dropdown for inserting url
+			const dropdownString = '<div class="sceditor-dropdown sceditor-insertlink" style="top: 5px; left: 6px; margin-top: 26px;"><div><div><label for="link">Twitter URL: </label><input type="text" id="link" dir="ltr" placeholder="https://"></div><div><input type="button" class="button" value="Lisää"></div></div></div>';
+			const dropdown = createElementFromHTML(dropdownString);
+			document.querySelector(".sceditor-toolbar").appendChild(dropdown);
 			document.querySelector('input[value=Lisää]').addEventListener('click', function(e){
 				e.preventDefault();
+				
+				// after submitting url we test if url is valid
 				const url = document.querySelector('input[id=link]').value;
 				if(validateTwitterURL(url)) {
+					
+					// if url is valid we close dropdown
 					document.querySelector('.sceditor-dropdown').remove();
+					
+					// next we collect tweet id
 					const twitterShareTweetLink = url;
 					const tweetRegex = /^https?:\/\/twitter\.com\/(?:#!\/)?(\w+)\/status(es)?\/([0-9]{19})/
 					const id = twitterShareTweetLink.match(tweetRegex)[3];
-					let container = createElementFromHTML('<div class="tweet" id="' + id + '"></div>');
-					document.querySelector('body').appendChild(container)
-					let tweet = document.querySelector('.tweet');
+					
+					// next we construct a container for the tweet. In this we load tweet, render it and move in SCEditor
+					const container = createElementFromHTML('<div class="tweet" id="' + id + '"></div>');
+					document.querySelector('body').appendChild(container);
+					
+					// get our container
+					const tweet = document.querySelector('.tweet');
+					
+					// yhis should expand text area content size accordingly. Not sure where this should be
 					self.expandToContent();
+					
+					// listener for detectin when tweet is rendered in body element
 					twttr.events.bind('rendered', function (event) {
+						
+						// when tweet is fully rendered we move it to SCEditor and remove class name prevet conflicts with other tweets
 						self.getBody().firstChild.appendChild(tweet);
-						//*
 						if(self.getBody().querySelector('.tweet').classList) {
 							self.getBody().querySelector('.tweet').classList.remove('tweet');
 						}
-						//*/
 					});
+					
+					// tweet widget creator function
 					twttr.widgets.createTweet(id, tweet, {
 						conversation: 'all', // or all
 						cards: 'visible', // or visible 
@@ -106,10 +136,8 @@ function createTwitterButton() {
 	});
 	
 	function createElementFromHTML(htmlString) {
-		var div = document.createElement('div');
+		const div = document.createElement('div');
 		div.innerHTML = htmlString.trim();
-		
-		// Change this to div.childNodes to support multiple top-level nodes
 		return div.firstChild; 
 	}
 
