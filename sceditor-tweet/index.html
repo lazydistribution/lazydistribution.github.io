@@ -120,7 +120,7 @@ function createTwitterButton() {
 						self.expandToContent();
 						
 						// finally we remove class name to prevent conflicts with other tweets
-						if(self.getBody().querySelector('.tweet').classList) {
+						if(self.getBody() && self.getBody().querySelector('.tweet') && self.getBody().querySelector('.tweet').classList) {
 							self.getBody().querySelector('.tweet').classList.remove('tweet');
 						}
 					});
