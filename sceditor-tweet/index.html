@@ -110,15 +110,16 @@ function createTwitterButton() {
 					// now when our container can be found from body get reference to it
 					const tweet = document.querySelector('.tweet');
 					
-					// this should expand text area content-size accordingly. Not sure where should I put this
-					self.expandToContent();
-					
 					// listener for detecting when tweet is rendered in body element
 					twttr.events.bind('rendered', function (event) {
 						
 						// when tweet is fully rendered in the body element we move it to the SCEditor 
-						// and remove class name to prevent conflicts with other tweets
 						self.getBody().firstChild.appendChild(tweet);
+						
+						// this should expand text area content-size accordingly. Not sure where should I put this
+						self.expandToContent();
+						
+						// finally we remove class name to prevent conflicts with other tweets
 						if(self.getBody().querySelector('.tweet').classList) {
 							self.getBody().querySelector('.tweet').classList.remove('tweet');
 						}
