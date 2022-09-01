@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.1/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.1/addons/p5.sound.min.js"></script>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/x-icon" href="./img/pngegg.png">
+    
+    <title>In the Context</title>
+
+    <link rel="stylesheet" type="text/css" href="css/sketch.css">
+    
+  </head>
+  <body>
+    
+    <!-- App start -->
+    <article class="container">
+      <header>
+        <h1>In the Context</h1>
+      </header>
+      <main></main>
+      <nav id="nav"></nav>
+    </article>
+    <!-- App end -->
+    
+    <!-- Templates start -->
+
+    <template id="template-list">
+      <section class="{{class-name-list}}">
+        {{children}}
+      </section>
+    </template>
+
+    <template id="template-list-column">
+      <section class="{{class-name-column}}">
+        {{children}}
+      </section>
+    </template>
+
+    <template id="template-button">
+      <button class="{{class-name-button}}" data-type="{{data-type}}" data-value="{{data-value}}">
+        <p>{{label}}</p>
+      </button>
+    </template>
+
+    <!-- Templates end -->
+    
+    <!-- json/js start -->
+    <!--<script src="js/md5.js"></script>-->
+    <script src="js/sketch.js"></script>
+    <script
+  src="https://code.jquery.com/jquery-3.6.1.min.js"
+  integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ="
+  crossorigin="anonymous"></script>
+
+    <!-- json/js end -->
+  
+  </body>
+</html>
